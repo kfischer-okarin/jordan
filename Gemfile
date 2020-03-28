@@ -10,6 +10,8 @@ group :development, :test do
   gem "rspec", "~> 3.9"
   gem "rubocop", "~> 0.80.1"
   gem "rubocop-rspec", "~> 1.38"
+  gem "factory_bot", "~> 5.1"
+  gem "pry-byebug", "~> 3.9"
 end
 
 group :development do
