@@ -7,4 +7,5 @@ module Jordan
 end
 
 require 'jordan/actions/add_bible_passage'
+require 'jordan/actions/finalize_livestream'
 require 'jordan/actions/register_video'
