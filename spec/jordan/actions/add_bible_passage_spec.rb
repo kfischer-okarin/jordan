@@ -9,62 +9,88 @@ module Jordan
 
       let(:user_id) { :user_id }
       let(:video_id) { :video }
-      let(:position) { 10 }
       let(:passage) { :bible_passage }
 
-      let(:video) { build(:video, owner: user_id) }
       let(:created_annotation) { :created_annotation }
 
       let(:videos) { spy('videos', get: video) }
       let(:annotations) { spy('annotations', create: created_annotation) }
       let(:viewers) { spy('viewers') }
 
-      describe 'Errors' do
-        it 'raises NotFound if video does not exist' do
-          allow(videos).to receive(:get).and_raise Exceptions::NotFound
+      shared_examples 'Common' do
+        describe 'Errors' do
+          it 'raises NotFound if video does not exist' do
+            allow(videos).to receive(:get).and_raise Exceptions::NotFound
 
-          expect { execute }.to raise_error Exceptions::NotFound
-        end
+            expect { execute }.to raise_error Exceptions::NotFound
+          end
 
-        context 'when specifying a negative position' do
-          let(:position) { -1 }
+          context 'when specifying a negative position' do
+            let(:position) { -1 }
 
-          it 'raises InvalidParameters' do
-            expect { subject }.to raise_error Exceptions::InvalidParameters
+            it 'raises InvalidParameters' do
+              expect { subject }.to raise_error Exceptions::InvalidParameters
+            end
+          end
+
+          context 'when the video is not owned by the user' do
+            let(:video) { build(:video, owner: 'other_user') }
+
+            it 'raises Forbidden' do
+              expect { subject }.to raise_error Exceptions::Forbidden
+            end
           end
         end
 
-        context 'when specifying a position outside of the video' do
-          let(:position) { video.duration + 1 }
+        it 'creates an Annotation' do
+          execute
 
-          it 'raises InvalidParameters' do
-            expect { subject }.to raise_error Exceptions::Unprocessable
-          end
+          expect(annotations).to have_received(:create).with(video_id: video_id, position: position, type: :bible_verse, passage: passage)
         end
 
-        context 'when the video is not owned by the user' do
-          let(:video) { build(:video, owner: 'other_user') }
+        it 'notifies the viewers' do
+          execute
 
-          it 'raises Forbidden' do
-            expect { subject }.to raise_error Exceptions::Forbidden
+          expect(viewers).to have_received(:notify).with(created_annotation)
+        end
+
+        it 'returns the created annotation' do
+          expect(execute).to eq created_annotation
+        end
+      end
+
+      context 'With a normal video' do
+        let(:video) { build(:video, owner: user_id) }
+        let(:position) { 10 }
+
+        include_examples 'Common'
+
+        describe 'Errors' do
+          context 'when specifying a position outside of the video' do
+            let(:position) { video.duration + 1 }
+
+            it 'raises InvalidParameters' do
+              expect { subject }.to raise_error Exceptions::Unprocessable
+            end
           end
         end
       end
 
-      it 'creates an Annotation' do
-        execute
+      context 'If the video is a livestream' do
+        let(:video) { build(:livestream, owner: user_id, start: stream_start) }
+        let(:stream_start) { Time.local(2020, 3, 29, 10, 0, 0) }
+        let(:now) { Time.local(2020, 3, 29, 10, 15, 0) }
+        let(:position) { 10 }
 
-        expect(annotations).to have_received(:create).with(video_id: video_id, position: position, type: :bible_verse, passage: passage)
-      end
+        around do |example|
+          Timecop.freeze(now) do
+            example.run
+          end
+        end
 
-      it 'notifies the viewers' do
-        execute
+        include_examples 'Common'
 
-        expect(viewers).to have_received(:notify).with(created_annotation)
-      end
-
-      it 'returns the created annotation' do
-        expect(execute).to eq created_annotation
+        context 'When trying to'
       end
     end
   end

@@ -12,6 +12,7 @@ group :development, :test do
   gem "rubocop-rspec", "~> 1.38"
   gem "factory_bot", "~> 5.1"
   gem "pry-byebug", "~> 3.9"
+  gem "timecop", "~> 0.9.1"
 end
 
 group :development do

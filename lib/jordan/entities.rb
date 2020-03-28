@@ -5,4 +5,5 @@ module Jordan
   module Entities; end
 end
 
+require 'jordan/entities/livestream'
 require 'jordan/entities/video'

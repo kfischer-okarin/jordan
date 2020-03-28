@@ -6,4 +6,6 @@ Metrics/BlockLength:
     - 'spec/**/*.rb'
 
 Style/BlockDelimiters:
+  Exclude:
+    - 'spec/factories/*.rb'
   EnforcedStyle: semantic
