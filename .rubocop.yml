@@ -1,0 +1,9 @@
+Layout/LineLength:
+  Max: 136
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*.rb'
+
+Style/BlockDelimiters:
+  EnforcedStyle: semantic
