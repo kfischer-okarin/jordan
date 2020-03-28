@@ -10,10 +10,11 @@ module Jordan
         @viewers = viewers
       end
 
-      def execute(video_id:, position:, passage:)
+      def execute(user_id:, video_id:, position:, passage:)
         raise Exceptions::InvalidParameters, 'Invalid position' if position.negative?
 
         video = @videos.get(video_id)
+        raise Exceptions::Forbidden unless video.owner == user_id
         raise Exceptions::Unprocessable, 'Position cannot be outside video duration' if position >= video.duration
 
         @annotations.create(video_id: video_id, position: position, type: :bible_verse, passage: passage).tap { |created_annotation|

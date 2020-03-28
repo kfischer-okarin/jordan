@@ -6,5 +6,6 @@ module Jordan
     class NotFound < StandardError; end
     class InvalidParameters < StandardError; end
     class Unprocessable < StandardError; end
+    class Forbidden < StandardError; end
   end
 end
