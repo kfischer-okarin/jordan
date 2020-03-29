@@ -1,0 +1,56 @@
+version: 2.1
+
+orbs:
+  ruby: circleci/ruby@0.2.1
+
+commands:
+  restore_repository:
+    steps:
+      - restore_cache:
+          keys:
+            - v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+
+default: &default
+  executor:
+    name: ruby/default
+    tag: '2.7.0'
+
+jobs:
+  checkout_code:
+    <<: *default
+    steps:
+      - checkout
+      - save_cache:
+          key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/project
+  test_subproject:
+    <<: *default
+    parameters:
+      project:
+        type: string
+    working_directory: ~/project/<< parameters.project >>
+    steps:
+      - restore_repository
+      - ruby/load-cache:
+          key: << parameters.project >>-gems-v1
+      - ruby/install-deps
+      - ruby/save-cache:
+          key: << parameters.project >>-gems-v1
+      - ruby/run-tests
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - checkout_code
+      - test_subproject:
+          name: jordan-core
+          project: core
+          requires:
+            - checkout_code
+      - test_subproject:
+          name: jordan-rails
+          project: rails
+          requires:
+            - checkout_code
