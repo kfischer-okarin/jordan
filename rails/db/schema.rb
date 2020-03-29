@@ -17,6 +17,7 @@ ActiveRecord::Schema.define(version: 2020_03_29_132020) do
     t.string "user_id", null: false
     t.string "name"
     t.string "email"
+    t.string "token"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["provider", "user_id"], name: "index_users_on_provider_and_user_id", unique: true

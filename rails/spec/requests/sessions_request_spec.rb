@@ -15,11 +15,16 @@ RSpec.describe "Sessions", type: :request do
       let(:email) { 'james.cole@west7.com' }
       let(:payload) { { 'sub' => google_user_id, 'name' => name, 'email' => email } }
 
+      let(:db_user) { User.find_by(provider: 'google', user_id: google_user_id) }
+
       before do
         allow_any_instance_of(GoogleIDToken::Validator).to receive(:check).and_return(payload)
       end
 
-      it { is_expected.to have_http_status(:ok) }
+      it 'returns an API token' do
+        expect(subject).to have_http_status(:ok)
+        expect(subject.parsed_body).to match('api_token' => db_user.token)
+      end
 
       context 'if the user does not exist yet' do
         it 'creates a new user with the attributes from Google' do
@@ -42,7 +47,7 @@ RSpec.describe "Sessions", type: :request do
         it 'creates no new user' do
           subject
 
-          expect(User.find_by(user_id: google_user_id)).to have_attributes(name: name, email: email)
+          expect(db_user).to have_attributes(name: name, email: email)
         end
       end
     end
