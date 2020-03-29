@@ -7,7 +7,7 @@ require "active_job/railtie"
 require "active_record/railtie"
 # require "active_storage/engine"  # TODO: Maybe
 require "action_controller/railtie"
-# require "action_mailer/railtie"
+require "action_mailer/railtie"
 # require "action_mailbox/engine"
 # require "action_text/engine"  # TODO: Maybe
 require "action_view/railtie"
@@ -32,5 +32,9 @@ module JordanRails
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    config.session_store :cookie_store, key: '_jordan_session'
+    config.middleware.use ActionDispatch::Cookies # Required for all session management
+    config.middleware.use ActionDispatch::Session::CookieStore, config.session_options
   end
 end
