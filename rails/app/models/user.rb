@@ -5,4 +5,9 @@ class User < ApplicationRecord
       update(token: token)
     }
   end
+
+  def self.from_token(token)
+    payload, _ = JWT.decode(token, Rails.application.secrets.secret_key_base)
+    find(payload['user_id'])
+  end
 end
