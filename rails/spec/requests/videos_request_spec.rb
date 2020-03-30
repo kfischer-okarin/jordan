@@ -6,8 +6,10 @@ RSpec.describe "Videos", type: :request do
       { Authorization: "Bearer #{user.token}" }
     end
 
+    let(:request_headers) { headers_for(user) }
+
     subject {
-      put "/videos/#{youtube_id}", headers: headers_for(user)
+      put "/videos/#{youtube_id}", headers: request_headers
       response
     }
 
@@ -36,6 +38,26 @@ RSpec.describe "Videos", type: :request do
         subject
 
         expect(action).to have_received(:execute).with(user_id: user.id, youtube_id: youtube_id)
+      end
+
+      describe 'Authentication' do
+        context 'Without an authentication token' do
+          let(:request_headers) { {} }
+
+          it { is_expected.to have_http_status(:unauthorized) }
+        end
+
+        context 'With an invalid token' do
+          let(:request_headers) { { Authorization: 'Bearer abc' } }
+
+          it { is_expected.to have_http_status(:unauthorized) }
+        end
+
+        it 'rejects expired tokens' do
+          Timecop.freeze(2.days.from_now) do
+            expect(subject).to have_http_status(:unauthorized)
+          end
+        end
       end
     end
   end
