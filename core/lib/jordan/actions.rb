@@ -6,6 +6,6 @@ module Jordan
   module Actions; end
 end
 
-require 'jordan/actions/add_bible_passage'
-require 'jordan/actions/finalize_livestream'
+require 'jordan/actions/add_annotation'
+require 'jordan/actions/publish_annotation'
 require 'jordan/actions/register_video'

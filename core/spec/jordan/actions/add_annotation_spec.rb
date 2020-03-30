@@ -1,0 +1,47 @@
+# frozen_string_literal: true
+
+module Jordan
+  module Actions
+    RSpec.describe AddAnnotation do
+      subject(:execute) { action.execute(user_id: user_id, video_id: video_id, payload: payload) }
+
+      let(:action) { described_class.new(videos: videos, annotations: annotations) }
+
+      let(:user_id) { :user_id }
+      let(:video_id) { :video }
+      let(:payload) { :bible_passage }
+      let(:video) { build(:video, owner: user_id) }
+
+      let(:created_annotation) { :created_annotation }
+
+      let(:videos) { spy('videos', get: video) }
+      let(:annotations) { spy('annotations', create: created_annotation) }
+
+      describe 'Errors' do
+        it 'raises NotFound if video does not exist' do
+          allow(videos).to receive(:get).and_raise Exceptions::NotFound
+
+          expect { execute }.to raise_error Exceptions::NotFound
+        end
+
+        context 'when the video is not owned by the user' do
+          let(:video) { build(:video, owner: 'other_user') }
+
+          it 'raises Forbidden' do
+            expect { subject }.to raise_error Exceptions::Forbidden
+          end
+        end
+      end
+
+      it 'creates an Annotation' do
+        execute
+
+        expect(annotations).to have_received(:create).with(video_id: video_id, payload: payload)
+      end
+
+      it 'returns the created annotation' do
+        expect(execute).to eq created_annotation
+      end
+    end
+  end
+end

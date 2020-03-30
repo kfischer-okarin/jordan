@@ -4,11 +4,10 @@ module Jordan
   module Entities
     # A video that can be annotated
     class Video
-      attr_reader :owner, :duration
+      attr_reader :owner
 
-      def initialize(owner:, duration:)
+      def initialize(owner:)
         @owner = owner
-        @duration = duration
       end
     end
   end
