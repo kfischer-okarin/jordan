@@ -29,11 +29,17 @@ class AnnotationsController < ApplicationController
   end
 
   def new_annotation_params
-    params.permit(:youtube_id, payload: {})
+    {
+      youtube_id: params.require(:youtube_id),
+      payload: params.require(:payload).permit!
+    }
   end
 
   def publish_params
-    params.permit(:id, :position)
+    {
+      id: params.require(:id),
+      position: params.require(:position)
+    }
   end
 
   class Publisher
