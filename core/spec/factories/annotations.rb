@@ -2,6 +2,7 @@
 
 FactoryBot.define do
   factory :annotation, class: 'Jordan::Entities::Annotation' do
+    sequence(:id)
     youtube_id { 'abc' }
     position { nil }
     payload { { type: :bible_verse, passage: 'Matthew 6:33' } }
