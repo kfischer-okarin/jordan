@@ -24,12 +24,13 @@ ActiveRecord::Schema.define(version: 2020_03_30_110701) do
   end
 
   create_table "videos", force: :cascade do |t|
-    t.string "youtube_id", null: false
     t.integer "user_id", null: false
+    t.string "youtube_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["user_id"], name: "index_videos_on_user_id"
     t.index ["youtube_id"], name: "index_videos_on_youtube_id"
   end
 
+  add_foreign_key "videos", "users"
 end
