@@ -3,6 +3,14 @@ class Annotation < ApplicationRecord
     def self.create(youtube_id:, payload:)
       Annotation.create(video: Video.find_by(youtube_id: youtube_id), payload: payload).as_entity
     end
+
+    def self.get(id)
+      Annotation.find(id).as_entity
+    end
+
+    def self.publish(annotation_id:, position:)
+      Annotation.find(annotation_id).update(position: position)
+    end
   end
 
   belongs_to :video

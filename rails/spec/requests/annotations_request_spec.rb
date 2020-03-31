@@ -51,4 +51,47 @@ RSpec.describe "Annotations", type: :request do
       it_behaves_like 'an authenticated endpoint'
     end
   end
+
+  describe 'POST /annotations/{annotation_id}/publish: Publish annotation' do
+    let(:request_headers) { headers_for(user) }
+
+    subject {
+      post "/annotations/#{annotation.id}/publish", params: { position: position }, headers: request_headers
+      response
+    }
+
+    let(:user) { create(:user) }
+    let(:video) { create(:video, user: user) }
+    let(:annotation) { create(:annotation, video: video) }
+
+    let(:position) { 10 }
+
+    before do
+      user.sign_in
+    end
+
+    describe 'Integration' do
+      it { is_expected.to have_http_status(:ok) }
+
+      it 'updates the annotation to the specified position' do
+        expect { subject }.to change { annotation.reload.position }.from(nil).to(position)
+      end
+    end
+
+    describe 'Unit' do
+      let(:action) { spy('Jordan::Actions::PublishAnnotation') }
+
+      before do
+        allow(Jordan::Actions::PublishAnnotation).to receive(:new).and_return(action)
+      end
+
+      it 'calls Jordan::Actions::PublishAnnotation' do
+        subject
+
+        expect(action).to have_received(:execute).with(user_id: user.id, position: position, annotation_id: annotation.id)
+      end
+
+      it_behaves_like 'an authenticated endpoint'
+    end
+  end
 end

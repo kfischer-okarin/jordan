@@ -12,6 +12,16 @@ class AnnotationsController < ApplicationController
     render json: as_json(created), status: :created
   end
 
+  def publish
+    action = Jordan::Actions::PublishAnnotation.new(annotations: Annotation::Gateway, videos: Video::Gateway, viewers: Publisher.new)
+    action.execute(
+      user_id: @user.id,
+      annotation_id: publish_params[:id].to_i,
+      position: publish_params[:position].to_i
+    )
+    render status: :ok
+  end
+
   private
 
   def as_json(annotation)
@@ -20,5 +30,14 @@ class AnnotationsController < ApplicationController
 
   def new_annotation_params
     params.permit(:youtube_id, payload: {})
+  end
+
+  def publish_params
+    params.permit(:id, :position)
+  end
+
+  class Publisher
+    def notify(annotation)
+    end
   end
 end

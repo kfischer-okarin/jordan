@@ -23,5 +23,32 @@ RSpec.describe Annotation, type: :model do
         )
       end
     end
+
+    describe '.get' do
+      subject { described_class.get(annotation.id) }
+
+      let(:annotation) { create(:annotation) }
+
+      it 'returns the corresponding entity' do
+        expect(subject).to be_a(Jordan::Entities::Annotation)
+        expect(subject).to have_attributes(
+          id: annotation.id,
+          payload: annotation.payload,
+          position: annotation.position,
+          youtube_id: annotation.video.youtube_id
+        )
+      end
+    end
+
+    describe '.publish' do
+      subject { described_class.publish(annotation_id: annotation.id, position: position) }
+
+      let(:annotation) { create(:annotation) }
+      let(:position) { 20 }
+
+      it 'updates the Annotation record' do
+        expect { subject }.to change { annotation.reload.position }.from(nil).to(position)
+      end
+    end
   end
 end
