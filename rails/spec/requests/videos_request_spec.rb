@@ -2,10 +2,6 @@ require 'rails_helper'
 
 RSpec.describe "Videos", type: :request do
   describe 'PUT /videos/{youtube_id}: Register video' do
-    def headers_for(user)
-      { Authorization: "Bearer #{user.token}" }
-    end
-
     let(:request_headers) { headers_for(user) }
 
     subject {

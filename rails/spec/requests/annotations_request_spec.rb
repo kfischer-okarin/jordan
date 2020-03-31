@@ -2,10 +2,6 @@ require 'rails_helper'
 
 RSpec.describe "Annotations", type: :request do
   describe 'POST /videos/{youtube_id}/annotations: Add annotation' do
-    def headers_for(user)
-      { Authorization: "Bearer #{user.token}" }
-    end
-
     let(:request_headers) { headers_for(user) }
 
     subject {
