@@ -8,20 +8,19 @@ module Jordan
       let(:action) { described_class.new(videos: videos, annotations: annotations, viewers: viewers) }
 
       let(:annotation_id) { :annotation_id }
-      let(:video_id) { :video_id }
+      let(:youtube_id) { 'abc' }
       let(:position) { 10 }
       let(:user_id) { :user_id }
-      let(:video_id) { :video }
 
       let(:video) { build(:video, owner: user_id) }
-      let(:annotation) { build(:annotation, video_id: video_id) }
+      let(:annotation) { build(:annotation, youtube_id: youtube_id) }
 
       let(:videos) { spy('videos') }
       let(:annotations) { spy('annotations', get: annotation, publish: annotation) }
       let(:viewers) { spy('viewers') }
 
       before do
-        allow(videos).to receive(:get).with(video_id).and_return(video)
+        allow(videos).to receive(:get_by_youtube_id).with(youtube_id).and_return(video)
       end
 
       describe 'Errors' do

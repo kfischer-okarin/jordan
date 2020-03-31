@@ -3,10 +3,10 @@
 module Jordan
   module Entities
     class Annotation
-      attr_reader :video_id, :position, :payload
+      attr_reader :youtube_id, :position, :payload
 
-      def initialize(video_id:, position:, payload:)
-        @video_id = video_id
+      def initialize(youtube_id:, position:, payload:)
+        @youtube_id = youtube_id
         @position = position
         @payload = payload
       end

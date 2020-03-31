@@ -9,11 +9,11 @@ module Jordan
         @annotations = annotations
       end
 
-      def execute(user_id:, video_id:, payload:)
-        video = @videos.get(video_id)
+      def execute(user_id:, youtube_id:, payload:)
+        video = @videos.get_by_youtube_id(youtube_id)
         raise Exceptions::Forbidden unless video.owner == user_id
 
-        @annotations.create(video_id: video_id, payload: payload)
+        @annotations.create(youtube_id: youtube_id, payload: payload)
       end
     end
   end

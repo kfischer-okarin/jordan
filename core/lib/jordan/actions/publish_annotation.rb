@@ -13,7 +13,7 @@ module Jordan
 
       def execute(user_id:, annotation_id:, position:)
         annotation = @annotations.get(annotation_id)
-        video = @videos.get(annotation.video_id)
+        video = @videos.get_by_youtube_id(annotation.youtube_id)
 
         raise Exceptions::Forbidden unless video.owner == user_id
         raise Exceptions::InvalidParameters, "Position can't be negative" if position.negative?

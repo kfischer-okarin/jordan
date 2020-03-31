@@ -3,23 +3,23 @@
 module Jordan
   module Actions
     RSpec.describe AddAnnotation do
-      subject(:execute) { action.execute(user_id: user_id, video_id: video_id, payload: payload) }
+      subject(:execute) { action.execute(user_id: user_id, youtube_id: youtube_id, payload: payload) }
 
       let(:action) { described_class.new(videos: videos, annotations: annotations) }
 
       let(:user_id) { :user_id }
-      let(:video_id) { :video }
+      let(:youtube_id) { 'abc' }
       let(:payload) { :bible_passage }
       let(:video) { build(:video, owner: user_id) }
 
       let(:created_annotation) { :created_annotation }
 
-      let(:videos) { spy('videos', get: video) }
+      let(:videos) { spy('videos', get_by_youtube_id: video) }
       let(:annotations) { spy('annotations', create: created_annotation) }
 
       describe 'Errors' do
         it 'raises NotFound if video does not exist' do
-          allow(videos).to receive(:get).and_raise Exceptions::NotFound
+          allow(videos).to receive(:get_by_youtube_id).and_raise Exceptions::NotFound
 
           expect { execute }.to raise_error Exceptions::NotFound
         end
@@ -36,7 +36,7 @@ module Jordan
       it 'creates an Annotation' do
         execute
 
-        expect(annotations).to have_received(:create).with(video_id: video_id, payload: payload)
+        expect(annotations).to have_received(:create).with(youtube_id: youtube_id, payload: payload)
       end
 
       it 'returns the created annotation' do
