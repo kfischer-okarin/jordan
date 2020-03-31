@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe "Videos", type: :request do
-  describe 'PUT /videos/{youtube_id}' do
+  describe 'PUT /videos/{youtube_id}: Register video' do
     def headers_for(user)
       { Authorization: "Bearer #{user.token}" }
     end
@@ -40,25 +40,7 @@ RSpec.describe "Videos", type: :request do
         expect(action).to have_received(:execute).with(user_id: user.id, youtube_id: youtube_id)
       end
 
-      describe 'Authentication' do
-        context 'Without an authentication token' do
-          let(:request_headers) { {} }
-
-          it { is_expected.to have_http_status(:unauthorized) }
-        end
-
-        context 'With an invalid token' do
-          let(:request_headers) { { Authorization: 'Bearer abc' } }
-
-          it { is_expected.to have_http_status(:unauthorized) }
-        end
-
-        it 'rejects expired tokens' do
-          Timecop.freeze(2.days.from_now) do
-            expect(subject).to have_http_status(:unauthorized)
-          end
-        end
-      end
+      it_behaves_like 'an authenticated endpoint'
     end
   end
 end
