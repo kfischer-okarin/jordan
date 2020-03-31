@@ -2,7 +2,7 @@ class AnnotationsController < ApplicationController
   before_action :authorize!
 
   def create
-    action = Jordan::Actions::AddAnnotation.new(videos: Video, annotations: Annotation::Gateway)
+    action = Jordan::Actions::AddAnnotation.new(videos: Video::Gateway, annotations: Annotation::Gateway)
     created = action.execute(
       user_id: @user.id,
       youtube_id: new_annotation_params[:youtube_id],
