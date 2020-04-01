@@ -107,4 +107,47 @@ RSpec.describe "Annotations", type: :request do
       it_behaves_like 'an authenticated endpoint'
     end
   end
+
+  describe 'DELETE /annotations/{annotation_id}: Delete annotation' do
+    let(:request_headers) { headers_for(user) }
+
+    subject {
+      delete "/annotations/#{annotation_id}", headers: request_headers
+      response
+    }
+
+    let(:user) { create(:user) }
+    let(:video) { create(:video, user: user) }
+    let!(:annotation) { create(:annotation, video: video) }
+    let(:annotation_id) { annotation.id }
+
+    before do
+      user.sign_in
+    end
+
+    describe 'Integration' do
+      it { is_expected.to have_http_status(:no_content) }
+
+      it 'removes the annotation' do
+        expect { subject }.to change { Annotation.count }.by(-1)
+        expect(Annotation.find_by(id: annotation_id)).to be_nil
+      end
+    end
+
+    describe 'Unit' do
+      let(:action) { spy('Jordan::Actions::DeleteAnnotation') }
+
+      before do
+        allow(Jordan::Actions::DeleteAnnotation).to receive(:new).and_return(action)
+      end
+
+      it 'calls Jordan::Actions::DeleteAnnotation' do
+        subject
+
+        expect(action).to have_received(:execute).with(user_id: user.id, annotation_id: annotation.id)
+      end
+
+      it_behaves_like 'an authenticated endpoint'
+    end
+  end
 end

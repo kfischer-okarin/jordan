@@ -13,6 +13,10 @@ class Annotation < ApplicationRecord
         published.update(position: position)
       }.as_entity
     end
+
+    def self.delete(annotation_id)
+      Annotation.find(annotation_id).destroy
+    end
   end
 
   belongs_to :video

@@ -4,7 +4,7 @@ Rails.application.routes.draw do
     post '/:youtube_id/annotations', to: 'annotations#create'
   end
 
-  resources :annotations, only: [] do
+  resources :annotations, only: [:destroy] do
     post '/publish', to: 'annotations#publish', on: :member
   end
   resources :sessions, only: [:create]

@@ -50,5 +50,16 @@ RSpec.describe Annotation, type: :model do
         expect { subject }.to change { annotation.reload.position }.from(nil).to(position)
       end
     end
+
+    describe '.delete' do
+      subject { described_class.delete(annotation.id) }
+
+      let!(:annotation) { create(:annotation) }
+
+      it 'removes the Annotation record' do
+        expect { subject }.to change { Annotation.count }.by(-1)
+        expect { Annotation.find(annotation.id) }.to raise_error(ActiveRecord::RecordNotFound)
+      end
+    end
   end
 end

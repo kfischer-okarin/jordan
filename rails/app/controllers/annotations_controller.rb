@@ -26,6 +26,14 @@ class AnnotationsController < ApplicationController
     render status: :ok
   end
 
+  def destroy
+    action = Jordan::Actions::DeleteAnnotation.new(annotations: Annotation::Gateway, videos: Video::Gateway)
+    action.execute(
+      user_id: @user.id,
+      annotation_id: params.require(:id).to_i
+    )
+  end
+
   private
 
   def as_json(annotation)
