@@ -25,12 +25,6 @@ module Jordan
       end
 
       describe 'Errors' do
-        it 'raises NotFound if annotation does not exist' do
-          allow(annotations).to receive(:get).and_raise Exceptions::NotFound
-
-          expect { execute }.to raise_error Exceptions::NotFound
-        end
-
         context 'when specifying a negative position' do
           let(:position) { -1 }
 

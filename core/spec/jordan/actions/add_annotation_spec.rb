@@ -22,12 +22,6 @@ module Jordan
       end
 
       describe 'Errors' do
-        it 'raises NotFound if video does not exist' do
-          allow(videos).to receive(:get_by_youtube_id).and_raise Exceptions::NotFound
-
-          expect { execute }.to raise_error Exceptions::NotFound
-        end
-
         context 'when the video is not owned by the user' do
           let(:video) { build(:video, owner: 'other_user') }
 
