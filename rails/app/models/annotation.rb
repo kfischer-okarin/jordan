@@ -9,7 +9,9 @@ class Annotation < ApplicationRecord
     end
 
     def self.publish(annotation_id:, position:)
-      Annotation.find(annotation_id).update(position: position)
+      Annotation.find(annotation_id).tap { |published|
+        published.update(position: position)
+      }.as_entity
     end
   end
 

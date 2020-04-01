@@ -71,10 +71,23 @@ RSpec.describe "Annotations", type: :request do
     end
 
     describe 'Integration' do
+      before do
+        allow(ActionCable.server).to receive(:broadcast)
+      end
+
       it { is_expected.to have_http_status(:ok) }
 
       it 'updates the annotation to the specified position' do
         expect { subject }.to change { annotation.reload.position }.from(nil).to(position)
+      end
+
+      it 'sends a message to the ViewerChannel of the video' do
+        subject
+
+        expect(ActionCable.server).to have_received(:broadcast).with(
+          video.youtube_id,
+          { position: position, payload: annotation.payload }
+        )
       end
     end
 

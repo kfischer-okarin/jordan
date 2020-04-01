@@ -13,7 +13,11 @@ class AnnotationsController < ApplicationController
   end
 
   def publish
-    action = Jordan::Actions::PublishAnnotation.new(annotations: Annotation::Gateway, videos: Video::Gateway, viewers: Publisher.new)
+    action = Jordan::Actions::PublishAnnotation.new(
+      annotations: Annotation::Gateway,
+      videos: Video::Gateway,
+      viewers: ViewerChannel::Gateway
+    )
     action.execute(
       user_id: @user.id,
       annotation_id: publish_params[:id].to_i,
@@ -40,10 +44,5 @@ class AnnotationsController < ApplicationController
       id: params.require(:id),
       position: params.require(:position)
     }
-  end
-
-  class Publisher
-    def notify(annotation)
-    end
   end
 end
