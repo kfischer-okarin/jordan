@@ -16,11 +16,12 @@ module Jordan
       let(:annotation) { build(:annotation, youtube_id: youtube_id) }
 
       let(:videos) { spy('videos') }
-      let(:annotations) { spy('annotations', get: annotation, publish: annotation) }
+      let(:annotations) { spy('annotations', publish: annotation) }
       let(:viewers) { spy('viewers') }
 
       before do
         allow(videos).to receive(:get_by_youtube_id).with(youtube_id).and_return(video)
+        allow(annotations).to receive(:get).with(annotation_id).and_return(annotation)
       end
 
       describe 'Errors' do

@@ -14,8 +14,12 @@ module Jordan
 
       let(:created_annotation) { :created_annotation }
 
-      let(:videos) { spy('videos', get_by_youtube_id: video) }
+      let(:videos) { spy('videos') }
       let(:annotations) { spy('annotations', create: created_annotation) }
+
+      before do
+        allow(videos).to receive(:get_by_youtube_id).with(youtube_id).and_return video
+      end
 
       describe 'Errors' do
         it 'raises NotFound if video does not exist' do
