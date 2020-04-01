@@ -5,11 +5,11 @@ RSpec.describe Annotation, type: :model do
     describe '.create' do
       subject { described_class.create(youtube_id: video.youtube_id, payload: payload) }
 
-      let(:video) { create(:video) }
+      let!(:video) { create(:video) }
       let(:payload) { { 'type' => 'text', 'text' => 'This is a text' } }
 
       it 'creates an unpublished annotation' do
-        expect { subject }.to change { Video.count }.by(1)
+        expect { subject }.to change { Annotation.count }.by(1)
         expect(Annotation.first).to have_attributes(video: video, payload: payload, position: nil)
       end
 
@@ -27,7 +27,7 @@ RSpec.describe Annotation, type: :model do
     describe '.get' do
       subject { described_class.get(annotation.id) }
 
-      let(:annotation) { create(:annotation) }
+      let!(:annotation) { create(:annotation) }
 
       it 'returns the corresponding entity' do
         expect(subject).to be_a(Jordan::Entities::Annotation)
@@ -43,7 +43,7 @@ RSpec.describe Annotation, type: :model do
     describe '.publish' do
       subject { described_class.publish(annotation_id: annotation.id, position: position) }
 
-      let(:annotation) { create(:annotation) }
+      let!(:annotation) { create(:annotation) }
       let(:position) { 20 }
 
       it 'updates the Annotation record' do

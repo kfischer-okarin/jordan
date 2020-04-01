@@ -18,7 +18,7 @@ RSpec.describe Video, type: :model do
       subject { described_class.get_by_youtube_id(youtube_id) }
 
       let(:user) { create(:user) }
-      let(:video) { create(:video, user: user) }
+      let!(:video) { create(:video, user: user) }
       let(:youtube_id) { video.youtube_id }
 
       it 'returns the video entity' do

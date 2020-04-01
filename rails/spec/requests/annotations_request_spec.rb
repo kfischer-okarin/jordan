@@ -48,6 +48,7 @@ RSpec.describe "Annotations", type: :request do
         expect(action).to have_received(:execute).with(user_id: user.id, youtube_id: youtube_id, payload: payload)
       end
 
+      include_examples 'it handles client errors'
       it_behaves_like 'an authenticated endpoint'
     end
   end
@@ -105,6 +106,7 @@ RSpec.describe "Annotations", type: :request do
       end
 
       it_behaves_like 'an authenticated endpoint'
+      include_examples 'it handles client errors'
     end
   end
 
@@ -148,6 +150,7 @@ RSpec.describe "Annotations", type: :request do
       end
 
       it_behaves_like 'an authenticated endpoint'
+      include_examples 'it handles client errors'
     end
   end
 end

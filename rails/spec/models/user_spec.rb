@@ -4,7 +4,7 @@ RSpec.describe User, type: :model do
   describe '#sign_in' do
     subject { user.sign_in }
 
-    let(:user) { create(:user) }
+    let!(:user) { create(:user) }
 
     let(:decoded_token) { JWT.decode(subject, Rails.application.secrets.secret_key_base)[0] }
 
