@@ -7,5 +7,6 @@ module Jordan
 end
 
 require 'jordan/actions/add_annotation'
+require 'jordan/actions/delete_annotation'
 require 'jordan/actions/publish_annotation'
 require 'jordan/actions/register_video'
