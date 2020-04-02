@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :video do
-    youtube_id { "abc" }
+    sequence(:youtube_id) { |n| "abc#{n}" }
     user
   end
 end

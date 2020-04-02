@@ -3,6 +3,8 @@ class Annotation < ApplicationRecord
 
   delegate :youtube_id, to: :video
 
+  before_create :initialize_position
+
   serialize :payload, JSON
 
   alias :original_as_json :as_json
@@ -15,13 +17,10 @@ class Annotation < ApplicationRecord
     original_as_json(only: %i[video_timestamp payload])
   end
 
-  def as_entity
-    Jordan::Entities::Annotation.new(
-      id: id,
-      youtube_id: video.youtube_id,
-      video_timestamp: video_timestamp,
-      position: position,
-      payload: payload
-    )
+  private
+
+  def initialize_position
+    last_position = video.annotations.order(:position).last&.position || 0
+    self.position = last_position + 1
   end
 end

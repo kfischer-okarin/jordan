@@ -1,6 +1,7 @@
 class AnnotationsController < ApplicationController
   before_action :authorize, only: %i[index]
   before_action :authorize!, except: %i[index]
+  before_action :find_video, only: %i[create reorder]
   before_action :find_annotation, only: %i[publish destroy]
 
   def index
@@ -16,9 +17,7 @@ class AnnotationsController < ApplicationController
   end
 
   def create
-    video = Video.find_by!(youtube_id: params.require(:youtube_id))
-    last_position = video.annotations.order(:position).last&.position || 0
-    annotation = Annotation.create(video: video, position: last_position + 1, payload: params.require(:payload))
+    annotation = Annotation.create(video: @video, payload: params.require(:payload))
 
     render json: annotation.as_json, status: :created
   end
@@ -29,36 +28,30 @@ class AnnotationsController < ApplicationController
     render status: :ok
   end
 
+  def reorder
+    Annotation.transaction do
+      annotation_by_id = @video.annotations.group_by(&:id)
+      new_order = params[:_json].map(&:to_i)
+      new_order.each.with_index do |id, index|
+        annotation_by_id.fetch(id)[0].update(position: index + 1)
+      end
+    end
+
+    render status: :ok
+  end
+
   def destroy
     @annotation.destroy
   end
 
   private
 
-  def as_json(annotation)
-    %i[id payload video_timestamp].map { |attribute| [attribute, annotation.send(attribute)] }.to_h
-  end
-
-  def as_json_public(annotation)
-    %i[payload video_timestamp].map { |attribute| [attribute, annotation.send(attribute)] }.to_h
+  def find_video
+    @video = Video.find_by!(youtube_id: params.require(:youtube_id))
   end
 
   def find_annotation
     @annotation = Annotation.includes(:video).find(params[:id])
     raise Jordan::Exceptions::Forbidden if @annotation.video.user_id != @user.id
-  end
-
-  def new_annotation_params
-    {
-      youtube_id: params.require(:youtube_id),
-      payload: params.require(:payload).permit!
-    }
-  end
-
-  def publish_params
-    {
-      id: params.require(:id),
-      video_timestamp: params.require(:video_timestamp)
-    }
   end
 end

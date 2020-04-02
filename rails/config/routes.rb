@@ -3,6 +3,7 @@ Rails.application.routes.draw do
     put '/:youtube_id', to: 'videos#register', as: :register
     get '/:youtube_id/annotations', to: 'annotations#index'
     post '/:youtube_id/annotations', to: 'annotations#create'
+    put '/:youtube_id/annotations/order', to: 'annotations#reorder'
   end
 
   resources :annotations, only: [:destroy] do

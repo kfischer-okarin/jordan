@@ -144,4 +144,37 @@ RSpec.describe "Annotations", type: :request do
 
     it_behaves_like 'an authenticated endpoint'
   end
+
+  describe 'PUT /videos/{youtube_id}/annotations/order: Rearrange annotations' do
+    let(:request_headers) { headers_for(user) }
+
+    subject {
+      put "/videos/#{youtube_id}/annotations/order", params: { _json: new_order }, headers: request_headers
+      response
+    }
+
+    let(:user) { create(:user) }
+    let(:video) { create(:video, user: user) }
+    let(:youtube_id) { video.youtube_id }
+    let!(:annotations) {
+      create_list(:annotation, 3, video: video)
+    }
+
+    let(:new_order) { [2, 0, 1].map { |i| annotations[i].id } }
+
+    before do
+      user.sign_in
+    end
+
+    fit { is_expected.to have_http_status(:ok) }
+
+    it 'reorders the annotations' do
+      expect { subject }.to change {
+        annotations.map(&:reload)
+        annotations.map(&:position)
+      }.from([1, 2, 3]).to([2, 3, 1])
+    end
+
+    it_behaves_like 'an authenticated endpoint'
+  end
 end
