@@ -2,6 +2,7 @@ class ApplicationController < ActionController::API
   class InvalidParameters < StandardError; end
   class Forbidden < StandardError; end
   class Unauthorized < StandardError; end
+  class InvalidOperation < StandardError; end
 
   rescue_from InvalidParameters do |e|
     render json: { message: e.to_s }, status: :bad_request
@@ -13,6 +14,10 @@ class ApplicationController < ActionController::API
 
   rescue_from Forbidden do |e|
     render json: { message: e.to_s }, status: :forbidden
+  end
+
+  rescue_from InvalidOperation do |e|
+    render json: { message: e.to_s }, status: :unprocessable_entity
   end
 
   rescue_from ActiveRecord::RecordNotFound do |e|

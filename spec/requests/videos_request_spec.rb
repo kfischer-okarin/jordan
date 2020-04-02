@@ -21,6 +21,17 @@ RSpec.describe "Videos", type: :request do
       expect(Video.first).to have_attributes(youtube_id: youtube_id, user_id: user.id)
     end
 
+    context 'When the video already exists' do
+      before do
+        create(:video, youtube_id: youtube_id)
+      end
+
+      it 'does not register a video' do
+        expect { subject }.not_to change { Video.count }
+        expect(subject).to have_http_status(:unprocessable_entity)
+      end
+    end
+
     it_behaves_like 'an authenticated endpoint'
   end
 end
