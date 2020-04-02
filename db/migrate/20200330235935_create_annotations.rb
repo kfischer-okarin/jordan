@@ -2,7 +2,7 @@ class CreateAnnotations < ActiveRecord::Migration[6.0]
   def change
     create_table :annotations do |t|
       t.references :video, null: false, foreign_key: true, index: true
-      t.integer :position
+      t.integer :position, null: false
       t.integer :video_timestamp
       t.text :payload
 

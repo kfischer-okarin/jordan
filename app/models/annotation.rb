@@ -1,5 +1,5 @@
 class Annotation < ApplicationRecord
-  belongs_to :video
+  belongs_to :video, inverse_of: :annotations
 
   delegate :youtube_id, to: :video
 

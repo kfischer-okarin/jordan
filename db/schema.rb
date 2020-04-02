@@ -10,11 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_03_30_235935) do
+ActiveRecord::Schema.define(version: 2020_04_02_225702) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "video_id", null: false
-    t.integer "position"
+    t.integer "position", null: false
     t.integer "video_timestamp"
     t.text "payload"
     t.datetime "created_at", precision: 6, null: false
@@ -38,8 +38,10 @@ ActiveRecord::Schema.define(version: 2020_03_30_235935) do
     t.string "youtube_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "status", default: 0, null: false
+    t.index ["user_id", "status"], name: "index_videos_on_user_id_and_status"
     t.index ["user_id"], name: "index_videos_on_user_id"
-    t.index ["youtube_id"], name: "index_videos_on_youtube_id"
+    t.index ["youtube_id"], name: "index_videos_on_youtube_id", unique: true
   end
 
   add_foreign_key "annotations", "videos"
