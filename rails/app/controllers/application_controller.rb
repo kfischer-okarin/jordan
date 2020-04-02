@@ -1,7 +1,9 @@
 class ApplicationController < ActionController::API
+  class InvalidParameters < StandardError; end
+  class Forbidden < StandardError; end
   class Unauthorized < StandardError; end
 
-  rescue_from Jordan::Exceptions::InvalidParameters do |e|
+  rescue_from InvalidParameters do |e|
     render json: { message: e.to_s }, status: :bad_request
   end
 
@@ -9,7 +11,7 @@ class ApplicationController < ActionController::API
     render json: { message: e.to_s }, status: :unauthorized
   end
 
-  rescue_from Jordan::Exceptions::Forbidden do |e|
+  rescue_from Forbidden do |e|
     render json: { message: e.to_s }, status: :forbidden
   end
 

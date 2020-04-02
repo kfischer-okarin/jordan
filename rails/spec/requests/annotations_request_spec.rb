@@ -166,7 +166,7 @@ RSpec.describe "Annotations", type: :request do
       user.sign_in
     end
 
-    fit { is_expected.to have_http_status(:ok) }
+    it { is_expected.to have_http_status(:ok) }
 
     it 'reorders the annotations' do
       expect { subject }.to change {

@@ -52,6 +52,6 @@ class AnnotationsController < ApplicationController
 
   def find_annotation
     @annotation = Annotation.includes(:video).find(params[:id])
-    raise Jordan::Exceptions::Forbidden if @annotation.video.user_id != @user.id
+    raise Forbidden if @annotation.video.user_id != @user.id
   end
 end
