@@ -3,13 +3,13 @@
 module Jordan
   module Actions
     RSpec.describe PublishAnnotation do
-      subject(:execute) { action.execute(user_id: user_id, annotation_id: annotation_id, position: position) }
+      subject(:execute) { action.execute(user_id: user_id, annotation_id: annotation_id, video_timestamp: video_timestamp) }
 
       let(:action) { described_class.new(videos: videos, annotations: annotations, viewers: viewers) }
 
       let(:annotation_id) { :annotation_id }
       let(:youtube_id) { 'abc' }
-      let(:position) { 10 }
+      let(:video_timestamp) { 10 }
       let(:user_id) { :user_id }
 
       let(:video) { build(:video, owner: user_id) }
@@ -26,7 +26,7 @@ module Jordan
 
       describe 'Errors' do
         context 'when specifying a negative position' do
-          let(:position) { -1 }
+          let(:video_timestamp) { -1 }
 
           it 'raises InvalidParameters' do
             expect { subject }.to raise_error Exceptions::InvalidParameters
@@ -45,7 +45,7 @@ module Jordan
       it 'publishes the Annotation' do
         execute
 
-        expect(annotations).to have_received(:publish).with(annotation_id: annotation_id, position: position)
+        expect(annotations).to have_received(:publish).with(annotation_id: annotation_id, video_timestamp: video_timestamp)
       end
 
       it 'notifies the viewers' do

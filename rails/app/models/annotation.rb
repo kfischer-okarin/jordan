@@ -1,7 +1,9 @@
 class Annotation < ApplicationRecord
   class Gateway
     def self.create(youtube_id:, payload:)
-      Annotation.create(video: Video.find_by(youtube_id: youtube_id), payload: payload).as_entity
+      video = Video.find_by(youtube_id: youtube_id)
+      next_position = Annotation.where(video: video).order(:position).last&.position || 1
+      Annotation.create(video: video, payload: payload, position: next_position).as_entity
     end
 
     def self.get(id)
@@ -10,13 +12,17 @@ class Annotation < ApplicationRecord
 
     def self.get_all_annotations(youtube_id:, published_only: false)
       result = Annotation.joins(:video).where(videos: { youtube_id: youtube_id })
-      result = result.where.not(position: nil) if published_only
+      if published_only
+        result = result.where.not(video_timestamp: nil).order(:video_timestamp)
+      else
+        result = result.order(:position)
+      end
       result.map(&:as_entity)
     end
 
-    def self.publish(annotation_id:, position:)
+    def self.publish(annotation_id:, video_timestamp:)
       Annotation.find(annotation_id).tap { |published|
-        published.update(position: position)
+        published.update(video_timestamp: video_timestamp)
       }.as_entity
     end
 
@@ -30,6 +36,12 @@ class Annotation < ApplicationRecord
   serialize :payload, JSON
 
   def as_entity
-    Jordan::Entities::Annotation.new(id: id, youtube_id: video.youtube_id, position: position, payload: payload)
+    Jordan::Entities::Annotation.new(
+      id: id,
+      youtube_id: video.youtube_id,
+      video_timestamp: video_timestamp,
+      position: position,
+      payload: payload
+    )
   end
 end

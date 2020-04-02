@@ -34,7 +34,7 @@ class AnnotationsController < ApplicationController
     action.execute(
       user_id: @user.id,
       annotation_id: publish_params[:id].to_i,
-      position: publish_params[:position].to_i
+      video_timestamp: publish_params[:video_timestamp].to_i
     )
     render status: :ok
   end
@@ -50,11 +50,11 @@ class AnnotationsController < ApplicationController
   private
 
   def as_json(annotation)
-    %i[id payload position].map { |attribute| [attribute, annotation.send(attribute)] }.to_h
+    %i[id payload video_timestamp].map { |attribute| [attribute, annotation.send(attribute)] }.to_h
   end
 
   def as_json_public(annotation)
-    %i[payload position].map { |attribute| [attribute, annotation.send(attribute)] }.to_h
+    %i[payload video_timestamp].map { |attribute| [attribute, annotation.send(attribute)] }.to_h
   end
 
   def new_annotation_params
@@ -67,7 +67,7 @@ class AnnotationsController < ApplicationController
   def publish_params
     {
       id: params.require(:id),
-      position: params.require(:position)
+      video_timestamp: params.require(:video_timestamp)
     }
   end
 end

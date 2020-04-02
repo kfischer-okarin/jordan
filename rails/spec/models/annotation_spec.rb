@@ -10,7 +10,7 @@ RSpec.describe Annotation, type: :model do
 
       it 'creates an unpublished annotation' do
         expect { subject }.to change { Annotation.count }.by(1)
-        expect(Annotation.first).to have_attributes(video: video, payload: payload, position: nil)
+        expect(Annotation.first).to have_attributes(video: video, payload: payload, video_timestamp: nil)
       end
 
       it 'returns the corresponding entity' do
@@ -18,7 +18,8 @@ RSpec.describe Annotation, type: :model do
         expect(subject).to have_attributes(
           id: an_instance_of(Integer),
           payload: payload,
-          position: nil,
+          video_timestamp: nil,
+          position: an_instance_of(Integer),
           youtube_id: video.youtube_id
         )
       end
@@ -35,19 +36,20 @@ RSpec.describe Annotation, type: :model do
           id: annotation.id,
           payload: annotation.payload,
           position: annotation.position,
+          video_timestamp: annotation.video_timestamp,
           youtube_id: annotation.video.youtube_id
         )
       end
     end
 
     describe '.publish' do
-      subject { described_class.publish(annotation_id: annotation.id, position: position) }
+      subject { described_class.publish(annotation_id: annotation.id, video_timestamp: video_timestamp) }
 
       let!(:annotation) { create(:annotation) }
-      let(:position) { 20 }
+      let(:video_timestamp) { 20 }
 
       it 'updates the Annotation record' do
-        expect { subject }.to change { annotation.reload.position }.from(nil).to(position)
+        expect { subject }.to change { annotation.reload.video_timestamp }.from(nil).to(video_timestamp)
       end
     end
 

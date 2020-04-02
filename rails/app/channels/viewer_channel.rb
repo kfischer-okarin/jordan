@@ -4,7 +4,7 @@ class ViewerChannel < ApplicationCable::Channel
       ActionCable.server.broadcast(
         published_annotation.youtube_id,
         {
-          position: published_annotation.position,
+          video_timestamp: published_annotation.video_timestamp,
           payload: published_annotation.payload
         }
       )

@@ -15,6 +15,7 @@ ActiveRecord::Schema.define(version: 2020_03_30_235935) do
   create_table "annotations", force: :cascade do |t|
     t.integer "video_id", null: false
     t.integer "position"
+    t.integer "video_timestamp"
     t.text "payload"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false

@@ -12,9 +12,9 @@ RSpec.describe "Annotations", type: :request do
     let(:youtube_id) { video.youtube_id }
     let!(:annotations) {
       [
-        create(:annotation, video: video, position: nil),
-        create(:annotation, video: video, position: 20),
-        create(:annotation, video: video, position: 30)
+        create(:annotation, video: video, video_timestamp: nil),
+        create(:annotation, video: video, video_timestamp: 30),
+        create(:annotation, video: video, video_timestamp: 20)
       ]
     }
 
@@ -29,23 +29,23 @@ RSpec.describe "Annotations", type: :request do
 
         it 'returns the all annotations of the video' do
           expect(subject).to have_http_status(:ok)
-          expect(subject.parsed_body).to contain_exactly(
-            {'id' => annotations[0].id, 'payload' => annotations[0].payload, 'position' => annotations[0].position},
-            {'id' => annotations[1].id, 'payload' => annotations[1].payload, 'position' => annotations[1].position},
-            {'id' => annotations[2].id, 'payload' => annotations[2].payload, 'position' => annotations[2].position}
-          )
+          expect(subject.parsed_body).to eq [
+            {'id' => annotations[0].id, 'payload' => annotations[0].payload, 'video_timestamp' => annotations[0].video_timestamp},
+            {'id' => annotations[1].id, 'payload' => annotations[1].payload, 'video_timestamp' => annotations[1].video_timestamp},
+            {'id' => annotations[2].id, 'payload' => annotations[2].payload, 'video_timestamp' => annotations[2].video_timestamp}
+          ]
         end
       end
 
       context 'When the user is not video owner' do
         let(:request_headers) { {} }
 
-        it 'returns the all annotations of the video' do
+        it 'returns the all published annotations of the video' do
           expect(subject).to have_http_status(:ok)
-          expect(subject.parsed_body).to contain_exactly(
-            {'payload' => annotations[1].payload, 'position' => annotations[1].position},
-            {'payload' => annotations[2].payload, 'position' => annotations[2].position}
-          )
+          expect(subject.parsed_body).to eq [
+            {'payload' => annotations[2].payload, 'video_timestamp' => annotations[2].video_timestamp},
+            {'payload' => annotations[1].payload, 'video_timestamp' => annotations[1].video_timestamp}
+          ]
         end
       end
     end
@@ -55,8 +55,8 @@ RSpec.describe "Annotations", type: :request do
       let(:action) { spy('Jordan::Actions::GetAnnotations', execute: retrieved) }
       let(:retrieved) {
         [
-          Jordan::Entities::Annotation.new(id: 1, youtube_id: youtube_id, position: nil, payload: {}),
-          Jordan::Entities::Annotation.new(id: 2, youtube_id: youtube_id, position: nil, payload: {})
+          Jordan::Entities::Annotation.new(id: 1, youtube_id: youtube_id, position: 1, video_timestamp: nil, payload: {}),
+          Jordan::Entities::Annotation.new(id: 2, youtube_id: youtube_id, position: 2, video_timestamp: nil, payload: {})
         ]
       }
 
@@ -106,19 +106,19 @@ RSpec.describe "Annotations", type: :request do
         expect(subject).to have_http_status(:created)
 
         created = Annotation.first
-        expect(subject.parsed_body).to match('id' => created.id, 'payload' => payload, 'position' => nil)
+        expect(subject.parsed_body).to match('id' => created.id, 'payload' => payload, 'video_timestamp' => nil)
       end
 
       it 'adds an annotation video' do
         expect { subject }.to change { Annotation.count }.by 1
-        expect(Annotation.first).to have_attributes(video: video, payload: payload, position: nil)
+        expect(Annotation.first).to have_attributes(video: video, payload: payload, video_timestamp: nil)
       end
     end
 
     describe 'Unit' do
       let(:action) { spy('Jordan::Actions::AddAnnotation', execute: created_annotation) }
       let(:created_annotation) {
-        Jordan::Entities::Annotation.new(id: 1, youtube_id: youtube_id, position: nil, payload: payload)
+        Jordan::Entities::Annotation.new(id: 1, youtube_id: youtube_id, position: 1, video_timestamp: nil, payload: payload)
       }
 
       before do
@@ -140,7 +140,7 @@ RSpec.describe "Annotations", type: :request do
     let(:request_headers) { headers_for(user) }
 
     subject {
-      post "/annotations/#{annotation.id}/publish", params: { position: position }, headers: request_headers
+      post "/annotations/#{annotation.id}/publish", params: { video_timestamp: video_timestamp }, headers: request_headers
       response
     }
 
@@ -148,7 +148,7 @@ RSpec.describe "Annotations", type: :request do
     let(:video) { create(:video, user: user) }
     let(:annotation) { create(:annotation, video: video) }
 
-    let(:position) { 10 }
+    let(:video_timestamp) { 10 }
 
     before do
       user.sign_in
@@ -162,7 +162,7 @@ RSpec.describe "Annotations", type: :request do
       it { is_expected.to have_http_status(:ok) }
 
       it 'updates the annotation to the specified position' do
-        expect { subject }.to change { annotation.reload.position }.from(nil).to(position)
+        expect { subject }.to change { annotation.reload.video_timestamp }.from(nil).to(video_timestamp)
       end
 
       it 'sends a message to the ViewerChannel of the video' do
@@ -170,7 +170,7 @@ RSpec.describe "Annotations", type: :request do
 
         expect(ActionCable.server).to have_received(:broadcast).with(
           video.youtube_id,
-          { position: position, payload: annotation.payload }
+          { video_timestamp: video_timestamp, payload: annotation.payload }
         )
       end
     end
@@ -185,7 +185,7 @@ RSpec.describe "Annotations", type: :request do
       it 'calls Jordan::Actions::PublishAnnotation' do
         subject
 
-        expect(action).to have_received(:execute).with(user_id: user.id, position: position, annotation_id: annotation.id)
+        expect(action).to have_received(:execute).with(user_id: user.id, video_timestamp: video_timestamp, annotation_id: annotation.id)
       end
 
       it_behaves_like 'an authenticated endpoint'

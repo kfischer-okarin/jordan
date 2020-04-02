@@ -4,7 +4,8 @@ FactoryBot.define do
   factory :annotation, class: 'Jordan::Entities::Annotation' do
     sequence(:id)
     youtube_id { 'abc' }
-    position { nil }
+    video_timestamp { nil }
+    sequence(:position)
     payload { { type: :bible_verse, passage: 'Matthew 6:33' } }
 
     # TODO: Remove classname once FactoryBot fixes keyword args
