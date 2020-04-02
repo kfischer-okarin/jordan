@@ -8,6 +8,12 @@ class Annotation < ApplicationRecord
       Annotation.find(id).as_entity
     end
 
+    def self.get_all_annotations(youtube_id:, published_only: false)
+      result = Annotation.joins(:video).where(videos: { youtube_id: youtube_id })
+      result = result.where.not(position: nil) if published_only
+      result.map(&:as_entity)
+    end
+
     def self.publish(annotation_id:, position:)
       Annotation.find(annotation_id).tap { |published|
         published.update(position: position)

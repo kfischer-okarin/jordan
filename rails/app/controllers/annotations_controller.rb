@@ -1,5 +1,18 @@
 class AnnotationsController < ApplicationController
-  before_action :authorize!
+  before_action :authorize, only: %i[index]
+  before_action :authorize!, except: %i[index]
+
+  def index
+    action = Jordan::Actions::GetAnnotations.new(videos: Video::Gateway, annotations: Annotation::Gateway)
+
+    if @user
+      annotations = action.execute(user_id: @user.id, youtube_id: params.require(:youtube_id))
+      render json: annotations.map { |a| as_json(a) }
+    else
+      annotations = action.execute(user_id: nil, youtube_id: params.require(:youtube_id))
+      render json: annotations.map { |a| as_json_public(a) }
+    end
+  end
 
   def create
     action = Jordan::Actions::AddAnnotation.new(videos: Video::Gateway, annotations: Annotation::Gateway)
@@ -38,6 +51,10 @@ class AnnotationsController < ApplicationController
 
   def as_json(annotation)
     %i[id payload position].map { |attribute| [attribute, annotation.send(attribute)] }.to_h
+  end
+
+  def as_json_public(annotation)
+    %i[payload position].map { |attribute| [attribute, annotation.send(attribute)] }.to_h
   end
 
   def new_annotation_params

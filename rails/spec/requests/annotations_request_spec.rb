@@ -1,6 +1,89 @@
 require 'rails_helper'
 
 RSpec.describe "Annotations", type: :request do
+  describe 'Get /videos/{youtube_id}/annotations: Get all annotation' do
+    subject {
+      get "/videos/#{youtube_id}/annotations", headers: request_headers
+      response
+    }
+
+    let(:user) { create(:user) }
+    let(:video) { create(:video, youtube_id: 'xyz', user: user) }
+    let(:youtube_id) { video.youtube_id }
+    let!(:annotations) {
+      [
+        create(:annotation, video: video, position: nil),
+        create(:annotation, video: video, position: 20),
+        create(:annotation, video: video, position: 30)
+      ]
+    }
+
+    before do
+      create(:annotation) # Unrelated annotation
+      user.sign_in
+    end
+
+    describe 'Integration' do
+      context 'When the user is video owner' do
+        let(:request_headers) { headers_for(user) }
+
+        it 'returns the all annotations of the video' do
+          expect(subject).to have_http_status(:ok)
+          expect(subject.parsed_body).to contain_exactly(
+            {'id' => annotations[0].id, 'payload' => annotations[0].payload, 'position' => annotations[0].position},
+            {'id' => annotations[1].id, 'payload' => annotations[1].payload, 'position' => annotations[1].position},
+            {'id' => annotations[2].id, 'payload' => annotations[2].payload, 'position' => annotations[2].position}
+          )
+        end
+      end
+
+      context 'When the user is not video owner' do
+        let(:request_headers) { {} }
+
+        it 'returns the all annotations of the video' do
+          expect(subject).to have_http_status(:ok)
+          expect(subject.parsed_body).to contain_exactly(
+            {'payload' => annotations[1].payload, 'position' => annotations[1].position},
+            {'payload' => annotations[2].payload, 'position' => annotations[2].position}
+          )
+        end
+      end
+    end
+
+    describe 'Unit' do
+      let(:request_headers) { headers_for(user) }
+      let(:action) { spy('Jordan::Actions::GetAnnotations', execute: retrieved) }
+      let(:retrieved) {
+        [
+          Jordan::Entities::Annotation.new(id: 1, youtube_id: youtube_id, position: nil, payload: {}),
+          Jordan::Entities::Annotation.new(id: 2, youtube_id: youtube_id, position: nil, payload: {})
+        ]
+      }
+
+      before do
+        allow(Jordan::Actions::GetAnnotations).to receive(:new).and_return(action)
+      end
+
+      it 'calls Jordan::Actions::GetAnnotations' do
+        subject
+
+        expect(action).to have_received(:execute).with(user_id: user.id, youtube_id: youtube_id)
+      end
+
+      context 'As an unauthorized user' do
+        let(:request_headers) { {} }
+
+        it 'calls Jordan::Actions::GetAnnotations' do
+          subject
+
+          expect(action).to have_received(:execute).with(user_id: nil, youtube_id: youtube_id)
+        end
+      end
+
+      include_examples 'it handles client errors'
+    end
+  end
+
   describe 'POST /videos/{youtube_id}/annotations: Add annotation' do
     let(:request_headers) { headers_for(user) }
 

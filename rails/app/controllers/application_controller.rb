@@ -1,6 +1,12 @@
 class ApplicationController < ActionController::API
+  class Unauthorized < StandardError; end
+
   rescue_from Jordan::Exceptions::InvalidParameters do |e|
     render json: { message: e.to_s }, status: :bad_request
+  end
+
+  rescue_from Unauthorized do |e|
+    render json: { message: e.to_s }, status: :unauthorized
   end
 
   rescue_from Jordan::Exceptions::Forbidden do |e|
@@ -16,9 +22,12 @@ class ApplicationController < ActionController::API
     raise JWT::DecodeError unless match
 
     @user = User.from_token match[:token]
-  rescue JWT::DecodeError
-    render status: :unauthorized
-  rescue JWT::ExpiredSignature
-    render json: { message: e.to_s }, status: :unauthorized
+  rescue JWT::DecodeError, JWT::ExpiredSignature => e
+    raise Unauthorized.new(e)
+  end
+
+  def authorize
+    authorize!
+  rescue Unauthorized
   end
 end
