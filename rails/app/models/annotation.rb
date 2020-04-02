@@ -1,39 +1,19 @@
 class Annotation < ApplicationRecord
-  class Gateway
-    def self.create(youtube_id:, payload:)
-      video = Video.find_by(youtube_id: youtube_id)
-      next_position = Annotation.where(video: video).order(:position).last&.position || 1
-      Annotation.create(video: video, payload: payload, position: next_position).as_entity
-    end
-
-    def self.get(id)
-      Annotation.find(id).as_entity
-    end
-
-    def self.get_all_annotations(youtube_id:, published_only: false)
-      result = Annotation.joins(:video).where(videos: { youtube_id: youtube_id })
-      if published_only
-        result = result.where.not(video_timestamp: nil).order(:video_timestamp)
-      else
-        result = result.order(:position)
-      end
-      result.map(&:as_entity)
-    end
-
-    def self.publish(annotation_id:, video_timestamp:)
-      Annotation.find(annotation_id).tap { |published|
-        published.update(video_timestamp: video_timestamp)
-      }.as_entity
-    end
-
-    def self.delete(annotation_id)
-      Annotation.find(annotation_id).destroy
-    end
-  end
-
   belongs_to :video
 
+  delegate :youtube_id, to: :video
+
   serialize :payload, JSON
+
+  alias :original_as_json :as_json
+
+  def as_json
+    super(only: %i[id video_timestamp payload])
+  end
+
+  def as_json_public
+    original_as_json(only: %i[video_timestamp payload])
+  end
 
   def as_entity
     Jordan::Entities::Annotation.new(

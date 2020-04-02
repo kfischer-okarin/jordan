@@ -1,50 +1,36 @@
 class AnnotationsController < ApplicationController
   before_action :authorize, only: %i[index]
   before_action :authorize!, except: %i[index]
+  before_action :find_annotation, only: %i[publish destroy]
 
   def index
-    action = Jordan::Actions::GetAnnotations.new(videos: Video::Gateway, annotations: Annotation::Gateway)
+    result = Annotation.joins(:video).where(videos: { youtube_id: params.require(:youtube_id) })
 
     if @user
-      annotations = action.execute(user_id: @user.id, youtube_id: params.require(:youtube_id))
-      render json: annotations.map { |a| as_json(a) }
+      result = result.order(:position)
+      render json: result.map(&:as_json)
     else
-      annotations = action.execute(user_id: nil, youtube_id: params.require(:youtube_id))
-      render json: annotations.map { |a| as_json_public(a) }
+      result = result.where.not(video_timestamp: nil).order(:video_timestamp)
+      render json: result.map(&:as_json_public)
     end
   end
 
   def create
-    action = Jordan::Actions::AddAnnotation.new(videos: Video::Gateway, annotations: Annotation::Gateway)
-    created = action.execute(
-      user_id: @user.id,
-      youtube_id: new_annotation_params[:youtube_id],
-      payload: new_annotation_params[:payload]
-    )
+    video = Video.find_by!(youtube_id: params.require(:youtube_id))
+    last_position = video.annotations.order(:position).last&.position || 0
+    annotation = Annotation.create(video: video, position: last_position + 1, payload: params.require(:payload))
 
-    render json: as_json(created), status: :created
+    render json: annotation.as_json, status: :created
   end
 
   def publish
-    action = Jordan::Actions::PublishAnnotation.new(
-      annotations: Annotation::Gateway,
-      videos: Video::Gateway,
-      viewers: ViewerChannel::Gateway
-    )
-    action.execute(
-      user_id: @user.id,
-      annotation_id: publish_params[:id].to_i,
-      video_timestamp: publish_params[:video_timestamp].to_i
-    )
+    @annotation.update(video_timestamp: params.require(:video_timestamp).to_i)
+    ViewerChannel.notify(@annotation)
     render status: :ok
   end
 
   def destroy
-    action = Jordan::Actions::DeleteAnnotation.new(annotations: Annotation::Gateway, videos: Video::Gateway)
-    action.execute(
-      user_id: @user.id,
-      annotation_id: params.require(:id).to_i
-    )
+    @annotation.destroy
   end
 
   private
@@ -55,6 +41,11 @@ class AnnotationsController < ApplicationController
 
   def as_json_public(annotation)
     %i[payload video_timestamp].map { |attribute| [attribute, annotation.send(attribute)] }.to_h
+  end
+
+  def find_annotation
+    @annotation = Annotation.includes(:video).find(params[:id])
+    raise Jordan::Exceptions::Forbidden if @annotation.video.user_id != @user.id
   end
 
   def new_annotation_params

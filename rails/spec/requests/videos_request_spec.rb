@@ -16,27 +16,11 @@ RSpec.describe "Videos", type: :request do
       user.sign_in
     end
 
-    describe 'Integration' do
-      it 'registers a video' do
-        expect { subject }.to change { Video.count }.by 1
-        expect(Video.first).to have_attributes(youtube_id: youtube_id, user_id: user.id)
-      end
+    it 'registers a video' do
+      expect { subject }.to change { Video.count }.by 1
+      expect(Video.first).to have_attributes(youtube_id: youtube_id, user_id: user.id)
     end
 
-    describe 'Unit' do
-      let(:action) { spy('Jordan::Actions::RegisterVideo') }
-
-      before do
-        allow(Jordan::Actions::RegisterVideo).to receive(:new).and_return(action)
-      end
-
-      it 'calls Jordan::Actions::RegisterVideo' do
-        subject
-
-        expect(action).to have_received(:execute).with(user_id: user.id, youtube_id: youtube_id)
-      end
-
-      it_behaves_like 'an authenticated endpoint'
-    end
+    it_behaves_like 'an authenticated endpoint'
   end
 end

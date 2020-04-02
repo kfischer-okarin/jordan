@@ -23,64 +23,29 @@ RSpec.describe "Annotations", type: :request do
       user.sign_in
     end
 
-    describe 'Integration' do
-      context 'When the user is video owner' do
-        let(:request_headers) { headers_for(user) }
+    context 'When the user is video owner' do
+      let(:request_headers) { headers_for(user) }
 
-        it 'returns the all annotations of the video' do
-          expect(subject).to have_http_status(:ok)
-          expect(subject.parsed_body).to eq [
-            {'id' => annotations[0].id, 'payload' => annotations[0].payload, 'video_timestamp' => annotations[0].video_timestamp},
-            {'id' => annotations[1].id, 'payload' => annotations[1].payload, 'video_timestamp' => annotations[1].video_timestamp},
-            {'id' => annotations[2].id, 'payload' => annotations[2].payload, 'video_timestamp' => annotations[2].video_timestamp}
-          ]
-        end
-      end
-
-      context 'When the user is not video owner' do
-        let(:request_headers) { {} }
-
-        it 'returns the all published annotations of the video' do
-          expect(subject).to have_http_status(:ok)
-          expect(subject.parsed_body).to eq [
-            {'payload' => annotations[2].payload, 'video_timestamp' => annotations[2].video_timestamp},
-            {'payload' => annotations[1].payload, 'video_timestamp' => annotations[1].video_timestamp}
-          ]
-        end
+      it 'returns the all annotations of the video' do
+        expect(subject).to have_http_status(:ok)
+        expect(subject.parsed_body).to eq [
+          {'id' => annotations[0].id, 'payload' => annotations[0].payload, 'video_timestamp' => annotations[0].video_timestamp},
+          {'id' => annotations[1].id, 'payload' => annotations[1].payload, 'video_timestamp' => annotations[1].video_timestamp},
+          {'id' => annotations[2].id, 'payload' => annotations[2].payload, 'video_timestamp' => annotations[2].video_timestamp}
+        ]
       end
     end
 
-    describe 'Unit' do
-      let(:request_headers) { headers_for(user) }
-      let(:action) { spy('Jordan::Actions::GetAnnotations', execute: retrieved) }
-      let(:retrieved) {
-        [
-          Jordan::Entities::Annotation.new(id: 1, youtube_id: youtube_id, position: 1, video_timestamp: nil, payload: {}),
-          Jordan::Entities::Annotation.new(id: 2, youtube_id: youtube_id, position: 2, video_timestamp: nil, payload: {})
+    context 'When the user is not video owner' do
+      let(:request_headers) { {} }
+
+      it 'returns the all published annotations of the video' do
+        expect(subject).to have_http_status(:ok)
+        expect(subject.parsed_body).to eq [
+          {'payload' => annotations[2].payload, 'video_timestamp' => annotations[2].video_timestamp},
+          {'payload' => annotations[1].payload, 'video_timestamp' => annotations[1].video_timestamp}
         ]
-      }
-
-      before do
-        allow(Jordan::Actions::GetAnnotations).to receive(:new).and_return(action)
       end
-
-      it 'calls Jordan::Actions::GetAnnotations' do
-        subject
-
-        expect(action).to have_received(:execute).with(user_id: user.id, youtube_id: youtube_id)
-      end
-
-      context 'As an unauthorized user' do
-        let(:request_headers) { {} }
-
-        it 'calls Jordan::Actions::GetAnnotations' do
-          subject
-
-          expect(action).to have_received(:execute).with(user_id: nil, youtube_id: youtube_id)
-        end
-      end
-
-      include_examples 'it handles client errors'
     end
   end
 
@@ -101,39 +66,19 @@ RSpec.describe "Annotations", type: :request do
       user.sign_in
     end
 
-    describe 'Integration' do
-      it 'returns the created annotatiion' do
-        expect(subject).to have_http_status(:created)
+    it 'returns the created annotatiion' do
+      expect(subject).to have_http_status(:created)
 
-        created = Annotation.first
-        expect(subject.parsed_body).to match('id' => created.id, 'payload' => payload, 'video_timestamp' => nil)
-      end
-
-      it 'adds an annotation video' do
-        expect { subject }.to change { Annotation.count }.by 1
-        expect(Annotation.first).to have_attributes(video: video, payload: payload, video_timestamp: nil)
-      end
+      created = Annotation.first
+      expect(subject.parsed_body).to match('id' => created.id, 'payload' => payload, 'video_timestamp' => nil)
     end
 
-    describe 'Unit' do
-      let(:action) { spy('Jordan::Actions::AddAnnotation', execute: created_annotation) }
-      let(:created_annotation) {
-        Jordan::Entities::Annotation.new(id: 1, youtube_id: youtube_id, position: 1, video_timestamp: nil, payload: payload)
-      }
-
-      before do
-        allow(Jordan::Actions::AddAnnotation).to receive(:new).and_return(action)
-      end
-
-      it 'calls Jordan::Actions::AddAnnotation' do
-        subject
-
-        expect(action).to have_received(:execute).with(user_id: user.id, youtube_id: youtube_id, payload: payload)
-      end
-
-      include_examples 'it handles client errors'
-      it_behaves_like 'an authenticated endpoint'
+    it 'adds an annotation video' do
+      expect { subject }.to change { Annotation.count }.by 1
+      expect(Annotation.first).to have_attributes(video: video, payload: payload, video_timestamp: nil)
     end
+
+    it_behaves_like 'an authenticated endpoint'
   end
 
   describe 'POST /annotations/{annotation_id}/publish: Publish annotation' do
@@ -152,45 +97,25 @@ RSpec.describe "Annotations", type: :request do
 
     before do
       user.sign_in
+      allow(ActionCable.server).to receive(:broadcast)
     end
 
-    describe 'Integration' do
-      before do
-        allow(ActionCable.server).to receive(:broadcast)
-      end
+    it { is_expected.to have_http_status(:ok) }
 
-      it { is_expected.to have_http_status(:ok) }
-
-      it 'updates the annotation to the specified position' do
-        expect { subject }.to change { annotation.reload.video_timestamp }.from(nil).to(video_timestamp)
-      end
-
-      it 'sends a message to the ViewerChannel of the video' do
-        subject
-
-        expect(ActionCable.server).to have_received(:broadcast).with(
-          video.youtube_id,
-          { video_timestamp: video_timestamp, payload: annotation.payload }
-        )
-      end
+    it 'updates the annotation to the specified position' do
+      expect { subject }.to change { annotation.reload.video_timestamp }.from(nil).to(video_timestamp)
     end
 
-    describe 'Unit' do
-      let(:action) { spy('Jordan::Actions::PublishAnnotation') }
+    it 'sends a message to the ViewerChannel of the video' do
+      subject
 
-      before do
-        allow(Jordan::Actions::PublishAnnotation).to receive(:new).and_return(action)
-      end
-
-      it 'calls Jordan::Actions::PublishAnnotation' do
-        subject
-
-        expect(action).to have_received(:execute).with(user_id: user.id, video_timestamp: video_timestamp, annotation_id: annotation.id)
-      end
-
-      it_behaves_like 'an authenticated endpoint'
-      include_examples 'it handles client errors'
+      expect(ActionCable.server).to have_received(:broadcast).with(
+        video.youtube_id,
+        { video_timestamp: video_timestamp, payload: annotation.payload }
+      )
     end
+
+    it_behaves_like 'an authenticated endpoint'
   end
 
   describe 'DELETE /annotations/{annotation_id}: Delete annotation' do
@@ -210,30 +135,13 @@ RSpec.describe "Annotations", type: :request do
       user.sign_in
     end
 
-    describe 'Integration' do
-      it { is_expected.to have_http_status(:no_content) }
+    it { is_expected.to have_http_status(:no_content) }
 
-      it 'removes the annotation' do
-        expect { subject }.to change { Annotation.count }.by(-1)
-        expect(Annotation.find_by(id: annotation_id)).to be_nil
-      end
+    it 'removes the annotation' do
+      expect { subject }.to change { Annotation.count }.by(-1)
+      expect(Annotation.find_by(id: annotation_id)).to be_nil
     end
 
-    describe 'Unit' do
-      let(:action) { spy('Jordan::Actions::DeleteAnnotation') }
-
-      before do
-        allow(Jordan::Actions::DeleteAnnotation).to receive(:new).and_return(action)
-      end
-
-      it 'calls Jordan::Actions::DeleteAnnotation' do
-        subject
-
-        expect(action).to have_received(:execute).with(user_id: user.id, annotation_id: annotation.id)
-      end
-
-      it_behaves_like 'an authenticated endpoint'
-      include_examples 'it handles client errors'
-    end
+    it_behaves_like 'an authenticated endpoint'
   end
 end
