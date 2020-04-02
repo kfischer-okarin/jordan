@@ -2,6 +2,7 @@ class AnnotationsController < ApplicationController
   before_action :authorize, only: %i[index]
   before_action :authorize!, except: %i[index]
   before_action :find_video, only: %i[create reorder]
+  before_action :authorize_for_video!, only: %i[create reorder]
   before_action :find_annotation, only: %i[publish destroy]
 
   def index
@@ -45,10 +46,6 @@ class AnnotationsController < ApplicationController
   end
 
   private
-
-  def find_video
-    @video = Video.find_by!(youtube_id: params.require(:youtube_id))
-  end
 
   def find_annotation
     @annotation = Annotation.includes(:video).find(params[:id])

@@ -34,4 +34,41 @@ RSpec.describe "Videos", type: :request do
 
     it_behaves_like 'an authenticated endpoint'
   end
+
+  describe 'PATCH /videos/{youtube_id}: Update video state' do
+    let(:request_headers) { headers_for(user) }
+
+    subject {
+      patch "/videos/#{youtube_id}", params: { status: status }, headers: request_headers
+      response
+    }
+
+    let(:user) { create(:user) }
+    let!(:video) { create(:video, user: user, youtube_id: youtube_id, status: 'upcoming') }
+    let(:youtube_id) { 'xyz' }
+    let(:status) { 'streaming' }
+
+    before do
+      user.sign_in
+    end
+
+    it 'returns the updated video' do
+      expect(subject).to have_http_status(:ok)
+      expect(subject.parsed_body).to eq({ 'youtube_id' => youtube_id, 'status' => status })
+    end
+
+    it 'updates the video status' do
+      expect { subject }.to change { video.reload.status }.to status
+    end
+
+    context 'When the video is not owned by the user exists' do
+      let(:video) { create(:video, user: create(:user), youtube_id: youtube_id, status: 'upcoming') }
+
+      it 'returns 403' do
+        expect(subject).to have_http_status(:forbidden)
+      end
+    end
+
+    it_behaves_like 'an authenticated endpoint'
+  end
 end

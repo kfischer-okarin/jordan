@@ -37,4 +37,12 @@ class ApplicationController < ActionController::API
     authorize!
   rescue Unauthorized
   end
+
+  def find_video
+    @video = Video.find_by!(youtube_id: params.require(:youtube_id))
+  end
+
+  def authorize_for_video!
+    raise Forbidden unless @video.user == @user
+  end
 end
