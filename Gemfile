@@ -5,8 +5,7 @@ ruby '2.7.0'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 6.0.2', '>= 6.0.2.2'
-# Use sqlite3 as the database for Active Record
-gem 'sqlite3', '~> 1.4'
+gem 'pg'
 # Use Puma as the app server
 gem 'puma', '~> 4.1'
 gem 'google-id-token', '~> 1.4'
@@ -28,6 +27,8 @@ gem 'bootsnap', '>= 1.4.2', require: false
 # gem 'rack-cors'
 
 group :development, :test do
+  # Use sqlite3 as the database for Active Record
+  gem 'sqlite3', '~> 1.4'
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'rspec-rails', '~> 4.0'
