@@ -1,6 +1,31 @@
 require 'rails_helper'
 
 RSpec.describe "Videos", type: :request do
+  describe 'GET /videos: Get your video' do
+    let(:request_headers) { headers_for(user) }
+
+    subject {
+      get "/videos", headers: request_headers
+      response
+    }
+
+    let(:user) { create(:user) }
+    let!(:videos) { create_list(:video, 3, user: user) }
+
+    before do
+      user.sign_in
+    end
+
+    it 'returns the videos' do
+      expect(subject).to have_http_status(:ok)
+      expect(subject.parsed_body).to contain_exactly(*videos.map { |v|
+        { 'youtube_id' => v.youtube_id, 'status' => v.status }
+      })
+    end
+
+    it_behaves_like 'an authenticated endpoint'
+  end
+
   describe 'PUT /videos/{youtube_id}: Register video' do
     let(:request_headers) { headers_for(user) }
 

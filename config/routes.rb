@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :videos, only: %i[index]
   scope 'videos' do
     get '/:youtube_id', to: 'videos#show'
     put '/:youtube_id', to: 'videos#register', as: :register
