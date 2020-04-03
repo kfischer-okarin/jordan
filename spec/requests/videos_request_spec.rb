@@ -35,6 +35,30 @@ RSpec.describe "Videos", type: :request do
     it_behaves_like 'an authenticated endpoint'
   end
 
+  describe 'GET /videos/{youtube_id}: Get video' do
+    subject {
+      get "/videos/#{youtube_id}"
+      response
+    }
+
+    let(:user) { create(:user) }
+    let(:video) { create(:video, user: user, status: 'streaming') }
+    let(:youtube_id) { video.youtube_id }
+
+    before do
+      user.sign_in
+    end
+
+    it 'returns the video' do
+      expect(subject).to have_http_status(:ok)
+      expect(subject.parsed_body).to eq({
+        'youtube_id' => youtube_id,
+        'status' => video.status,
+        'user' => { 'name' => user.name }
+      })
+    end
+  end
+
   describe 'PATCH /videos/{youtube_id}: Update video state' do
     let(:request_headers) { headers_for(user) }
 
