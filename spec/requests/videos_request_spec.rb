@@ -2,8 +2,6 @@ require 'rails_helper'
 
 RSpec.describe "Videos", type: :request do
   describe 'GET /videos: Get your video' do
-    let(:request_headers) { headers_for(user) }
-
     subject {
       get "/videos", headers: request_headers
       response
@@ -11,19 +9,32 @@ RSpec.describe "Videos", type: :request do
 
     let(:user) { create(:user) }
     let!(:videos) { create_list(:video, 3, user: user) }
+    let!(:other_video) { create(:video) }
 
     before do
       user.sign_in
     end
 
-    it 'returns the videos' do
-      expect(subject).to have_http_status(:ok)
-      expect(subject.parsed_body).to contain_exactly(*videos.map { |v|
-        { 'youtube_id' => v.youtube_id, 'status' => v.status }
-      })
+    context 'When the user is logged in' do
+      let(:request_headers) { headers_for(user) }
+
+      it 'returns own videos' do
+        expect(subject).to have_http_status(:ok)
+        expect(subject.parsed_body).to contain_exactly(*videos.map { |v|
+          { 'youtube_id' => v.youtube_id, 'status' => v.status, 'title' => v.title, 'user' => { 'name' => user.name }  }
+        })
+      end
     end
 
-    it_behaves_like 'an authenticated endpoint'
+    context 'When the user is not logged in' do
+      let(:request_headers) { {} }
+      it 'returns all videos' do
+        expect(subject).to have_http_status(:ok)
+        expect(subject.parsed_body).to contain_exactly(*(videos + [other_video]).map { |v|
+          { 'youtube_id' => v.youtube_id, 'status' => v.status, 'title' => v.title, 'user' => { 'name' => user.name } }
+        })
+      end
+    end
   end
 
   describe 'PUT /videos/{youtube_id}: Register video' do
@@ -80,6 +91,7 @@ RSpec.describe "Videos", type: :request do
       expect(subject.parsed_body).to eq({
         'youtube_id' => youtube_id,
         'status' => video.status,
+        'title' => video.title,
         'user' => { 'name' => user.name }
       })
     end
@@ -105,7 +117,7 @@ RSpec.describe "Videos", type: :request do
 
     it 'returns the updated video' do
       expect(subject).to have_http_status(:ok)
-      expect(subject.parsed_body).to eq({ 'youtube_id' => youtube_id, 'status' => status })
+      expect(subject.parsed_body).to eq({ 'youtube_id' => youtube_id, 'status' => status, 'title' => video.title })
     end
 
     it 'updates the video status' do

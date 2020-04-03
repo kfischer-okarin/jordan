@@ -5,10 +5,10 @@ class Video < ApplicationRecord
   enum status: [:upcoming, :streaming, :streamed]
 
   def json
-    as_json(only: %i[youtube_id status])
+    as_json(only: %i[youtube_id title status])
   end
 
   def public_json
-    as_json(only: %i[youtube_id status], include: { user: { only: :name } })
+    as_json(only: %i[youtube_id title status], include: { user: { only: :name } })
   end
 end

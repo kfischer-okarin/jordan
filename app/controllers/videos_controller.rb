@@ -1,10 +1,17 @@
 class VideosController < ApplicationController
-  before_action :authorize!, except: %i[show]
+  before_action :authorize, only: %i[index]
+  before_action :authorize!, except: %i[index show]
   before_action :find_video, only: %i[show update]
   before_action :authorize_for_video!, only: %i[update]
 
   def index
-    render json: Video.includes(:user).where(user: @user).map(&:json)
+    videos = Video.includes(:user)
+    if @user
+      videos = videos.where(user: @user)
+      render json: videos.map(&:public_json)
+    else
+      render json: videos.map(&:public_json)
+    end
   end
 
   def register
