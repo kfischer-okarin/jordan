@@ -88,7 +88,7 @@ RSpec.describe "Videos", type: :request do
     let(:request_headers) { headers_for(user) }
 
     subject {
-      patch "/videos/#{youtube_id}", params: { status: status }, headers: request_headers
+      patch "/videos/#{youtube_id}", params: params, headers: request_headers
       response
     }
 
@@ -96,6 +96,7 @@ RSpec.describe "Videos", type: :request do
     let!(:video) { create(:video, user: user, youtube_id: youtube_id, status: 'upcoming') }
     let(:youtube_id) { 'xyz' }
     let(:status) { 'streaming' }
+    let(:params) { { status: status } }
 
     before do
       user.sign_in
@@ -115,6 +116,14 @@ RSpec.describe "Videos", type: :request do
 
       it 'returns 403' do
         expect(subject).to have_http_status(:forbidden)
+      end
+    end
+
+    context 'With unknown params' do
+      let(:params) { { unknown: 'abb' } }
+
+      it 'returns 400' do
+        expect(subject).to have_http_status(:bad_request)
       end
     end
 

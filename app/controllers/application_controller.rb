@@ -4,7 +4,7 @@ class ApplicationController < ActionController::API
   class Unauthorized < StandardError; end
   class InvalidOperation < StandardError; end
 
-  rescue_from InvalidParameters do |e|
+  rescue_from InvalidParameters, ActionController::UnpermittedParameters do |e|
     render json: { message: e.to_s }, status: :bad_request
   end
 

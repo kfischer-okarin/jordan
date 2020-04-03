@@ -19,7 +19,13 @@ class VideosController < ApplicationController
   end
 
   def update
-    @video.update(status: params.require(:status))
+    @video.update(**update_params)
     render json: @video.json
+  end
+
+  private
+
+  def update_params
+    params.permit(:youtube_id, :status).except(:youtube_id)
   end
 end

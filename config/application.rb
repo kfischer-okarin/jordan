@@ -36,5 +36,6 @@ module JordanRails
     config.session_store :cookie_store, key: '_jordan_session'
     config.middleware.use ActionDispatch::Cookies # Required for all session management
     config.middleware.use ActionDispatch::Session::CookieStore, config.session_options
+    config.action_controller.action_on_unpermitted_parameters = :raise
   end
 end
