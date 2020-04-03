@@ -30,12 +30,13 @@ RSpec.describe "Videos", type: :request do
     let(:request_headers) { headers_for(user) }
 
     subject {
-      put "/videos/#{youtube_id}", headers: request_headers
+      put "/videos/#{youtube_id}", params: params, headers: request_headers
       response
     }
 
     let(:user) { create(:user) }
     let(:youtube_id) { 'xyz' }
+    let(:params) { { 'title': 'Creations' } }
 
     before do
       user.sign_in
@@ -43,7 +44,7 @@ RSpec.describe "Videos", type: :request do
 
     it 'registers a video' do
       expect { subject }.to change { Video.count }.by 1
-      expect(Video.first).to have_attributes(youtube_id: youtube_id, user_id: user.id)
+      expect(Video.first).to have_attributes(youtube_id: youtube_id, user_id: user.id, title: 'Creations')
     end
 
     context 'When the video already exists' do

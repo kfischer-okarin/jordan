@@ -8,10 +8,10 @@ class VideosController < ApplicationController
   end
 
   def register
-    youtube_id = params.require(:youtube_id)
+    youtube_id = register_params[:youtube_id]
     raise InvalidOperation.new 'Video already exists' if Video.exists?(youtube_id: youtube_id)
 
-    Video.create(user: @user, youtube_id: youtube_id)
+    Video.create(user: @user, youtube_id: youtube_id, **register_params)
   end
 
   def show
@@ -27,5 +27,9 @@ class VideosController < ApplicationController
 
   def update_params
     params.permit(:youtube_id, :status).except(:youtube_id)
+  end
+
+  def register_params
+    params.permit(:youtube_id, :title)
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_04_02_225702) do
+ActiveRecord::Schema.define(version: 2020_04_03_160517) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "video_id", null: false
@@ -39,6 +39,7 @@ ActiveRecord::Schema.define(version: 2020_04_02_225702) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.integer "status", default: 0, null: false
+    t.string "title"
     t.index ["user_id", "status"], name: "index_videos_on_user_id_and_status"
     t.index ["user_id"], name: "index_videos_on_user_id"
     t.index ["youtube_id"], name: "index_videos_on_youtube_id", unique: true
