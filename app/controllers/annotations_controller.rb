@@ -11,17 +11,17 @@ class AnnotationsController < ApplicationController
 
     if @user
       result = result.order(:position)
-      render json: result.map(&:as_json)
+      render json: result.map(&:json)
     else
       result = result.where.not(video_timestamp: nil).order(:video_timestamp)
-      render json: result.map(&:as_json_public)
+      render json: result.map(&:public_json)
     end
   end
 
   def create
     annotation = Annotation.create(video: @video, payload: params.require(:payload))
 
-    render json: annotation.as_json, status: :created
+    render json: annotation.json, status: :created
   end
 
   def publish
