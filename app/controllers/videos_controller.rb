@@ -18,7 +18,8 @@ class VideosController < ApplicationController
     youtube_id = params[:youtube_id]
     raise InvalidOperation.new 'Video already exists' if Video.exists?(youtube_id: youtube_id)
 
-    Video.create(user: @user, youtube_id: youtube_id, **register_params)
+    created = Video.create(user: @user, youtube_id: youtube_id, **register_params)
+    render json: created.public_json
   end
 
   def show
