@@ -13,4 +13,5 @@ Rails.application.routes.draw do
     post '/publish', to: 'annotations#publish', on: :member
   end
   resources :sessions, only: [:create]
+  get '/passage', to: 'passages#show'
 end
