@@ -3,7 +3,7 @@ class PassagesController < ApplicationController
 
   def show
     response = self.class.get('http://labs.bible.org/api/', query: passage_params)
-    render json: response
+    render json: response.body, status: response.code
   end
 
   private

@@ -9,9 +9,10 @@ RSpec.describe "Passages", type: :request do
 
     let(:params) { { passage: 'John 3:16', type: 'json' } }
     let(:verse) { 'For this is' }
+    let(:api_response) { double(code: 200, body: verse)}
 
     before do
-      allow(PassagesController).to receive(:get).with('http://labs.bible.org/api/', query: params).and_return(verse)
+      allow(PassagesController).to receive(:get).with('http://labs.bible.org/api/', query: params).and_return(api_response)
     end
 
     it 'forwards the request to the Bible API' do
