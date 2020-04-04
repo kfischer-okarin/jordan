@@ -85,13 +85,14 @@ RSpec.describe "Annotations", type: :request do
     let(:request_headers) { headers_for(user) }
 
     subject {
-      post "/annotations/#{annotation.id}/publish", params: { video_timestamp: video_timestamp }, headers: request_headers
+      post "/annotations/#{annotation.id}/publish", params: { annotation: params }, headers: request_headers
       response
     }
 
     let(:user) { create(:user) }
     let(:video) { create(:video, user: user) }
     let(:annotation) { create(:annotation, video: video) }
+    let(:params) { { video_timestamp: video_timestamp } }
 
     let(:video_timestamp) { 10 }
 

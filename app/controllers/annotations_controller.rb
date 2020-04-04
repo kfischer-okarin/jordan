@@ -25,7 +25,7 @@ class AnnotationsController < ApplicationController
   end
 
   def publish
-    @annotation.update(video_timestamp: params.require(:video_timestamp).to_i)
+    @annotation.update(**publish_params)
     ViewerChannel.notify(@annotation)
     render status: :ok
   end
@@ -65,5 +65,9 @@ class AnnotationsController < ApplicationController
 
   def update_params
     params.require(:annotation).permit(payload: {})
+  end
+
+  def publish_params
+    params.require(:annotation).permit(:video_timestamp)
   end
 end
