@@ -9,7 +9,7 @@ Rails.application.routes.draw do
     put '/:youtube_id/annotations/order', to: 'annotations#reorder'
   end
 
-  resources :annotations, only: [:destroy] do
+  resources :annotations, only: %i[update destroy] do
     post '/publish', to: 'annotations#publish', on: :member
   end
   resources :sessions, only: [:create]

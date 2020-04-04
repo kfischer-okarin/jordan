@@ -3,8 +3,8 @@ class AnnotationsController < ApplicationController
   before_action :authorize!, except: %i[index]
   before_action :find_video, only: %i[create reorder]
   before_action :authorize_for_video!, only: %i[create reorder]
-  before_action :find_annotation, only: %i[publish destroy]
-  before_action :authorize_for_annotation!, only: %i[publish destroy]
+  before_action :find_annotation, only: %i[publish update destroy]
+  before_action :authorize_for_annotation!, only: %i[publish update destroy]
 
   def index
     result = Annotation.joins(:video).where(videos: { youtube_id: params.require(:youtube_id) })
@@ -42,6 +42,12 @@ class AnnotationsController < ApplicationController
     render status: :ok
   end
 
+  def update
+    @annotation.update(**update_params)
+
+    render json: @annotation.json
+  end
+
   def destroy
     @annotation.destroy
   end
@@ -55,5 +61,9 @@ class AnnotationsController < ApplicationController
 
   def authorize_for_annotation!
     raise Forbidden unless @annotation.video.user == @user
+  end
+
+  def update_params
+    params.require(:annotation).permit(payload: {})
   end
 end

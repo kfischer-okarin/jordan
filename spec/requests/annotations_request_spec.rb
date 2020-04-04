@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe "Annotations", type: :request do
-  describe 'Get /videos/{youtube_id}/annotations: Get all annotation' do
+  describe 'GET /videos/{youtube_id}/annotations: Get all annotation' do
     subject {
       get "/videos/#{youtube_id}/annotations", headers: request_headers
       response
@@ -113,6 +113,42 @@ RSpec.describe "Annotations", type: :request do
         video.youtube_id,
         { video_timestamp: video_timestamp, payload: annotation.payload }
       )
+    end
+
+    it_behaves_like 'an authenticated endpoint'
+  end
+
+  describe 'PATCH /annotations/{annotation_id}: Edit annotation' do
+    let(:request_headers) { headers_for(user) }
+
+    subject {
+      patch "/annotations/#{annotation_id}", params: { annotation: params }, headers: request_headers
+      response
+    }
+
+    let(:user) { create(:user) }
+    let(:video) { create(:video, user: user) }
+    let!(:annotation) { create(:annotation, video: video) }
+    let(:annotation_id) { annotation.id }
+    let(:new_payload) { { 'new_content' => 'aaa' }  }
+    let(:params) { { payload: new_payload}}
+
+    before do
+      user.sign_in
+    end
+
+    it 'returns the updated annotation' do
+      expect(subject).to have_http_status(:ok)
+      expect(subject.parsed_body).to eq({
+        'id' => annotation.id,
+        'payload' => new_payload,
+        'video_timestamp' => annotation.video_timestamp
+      })
+    end
+
+    it 'updates the annotation' do
+      old_payload = annotation.payload
+      expect { subject }.to change { annotation.reload.payload }.from(old_payload).to(new_payload)
     end
 
     it_behaves_like 'an authenticated endpoint'
