@@ -116,6 +116,36 @@ RSpec.describe "Annotations", type: :request do
       )
     end
 
+    context 'When the video was upcoming' do
+      before do
+        video.update(status: 'upcoming')
+      end
+
+      it 'changes the status to streaming' do
+        expect { subject }.to change { video.reload.status }.from('upcoming').to('streaming')
+      end
+    end
+
+    context 'When the video was streaming' do
+      before do
+        video.update(status: 'streaming')
+      end
+
+      it 'does not change the status' do
+        expect { subject }.not_to change { video.reload.status }
+      end
+    end
+
+    context 'When the video was streamed' do
+      before do
+        video.update(status: 'streamed')
+      end
+
+      it 'returns 422' do
+        expect(subject).to have_http_status(:unprocessable_entity)
+      end
+    end
+
     it_behaves_like 'an authenticated endpoint'
   end
 

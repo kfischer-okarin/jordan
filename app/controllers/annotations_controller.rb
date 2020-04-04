@@ -25,8 +25,11 @@ class AnnotationsController < ApplicationController
   end
 
   def publish
+    raise InvalidOperation, 'Stream is already finished' if @annotation.video.streamed?
+
     @annotation.update(**publish_params)
     ViewerChannel.notify(@annotation)
+    @annotation.video.update(status: :streaming) if @annotation.video.upcoming?
     render status: :ok
   end
 
