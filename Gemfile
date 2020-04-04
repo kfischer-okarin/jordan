@@ -49,3 +49,5 @@ end
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 gem "rack-cors", "~> 1.1"
+
+gem "httparty", "~> 0.18.0"
