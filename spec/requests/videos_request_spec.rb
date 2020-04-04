@@ -112,7 +112,7 @@ RSpec.describe "Videos", type: :request do
     let(:request_headers) { headers_for(user) }
 
     subject {
-      patch "/videos/#{youtube_id}", params: params, headers: request_headers
+      patch "/videos/#{youtube_id}", params: { video: params }, headers: request_headers
       response
     }
 

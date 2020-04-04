@@ -34,7 +34,7 @@ class VideosController < ApplicationController
   private
 
   def update_params
-    params.permit(:youtube_id, :status).except(:youtube_id)
+    params.require(:video).permit(:status)
   end
 
   def register_params
